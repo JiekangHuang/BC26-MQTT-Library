@@ -15,14 +15,19 @@ void setup()
     client.init(BAUDRATE_38400, BAND_8, apn);
     client.openMQTTClient(host, MQTT_PORT_1883);
     client.connectMQTTServer(user, key);
-    client.publish(topic, msg, MQTT_QOS0);
 }
 
 void loop()
 {
+    char        str[10];
     static long timer = millis();
-    if (millis() - timer >= 10000) {
+    if (millis() - timer >= 5000) {
         timer = millis();
-        client.publish(topic, timer / 1000, MQTT_QOS0);
+        if (client.getDate(str)) {
+            Serial.println(str);
+        }
+        if (client.getTime(str)) {
+            Serial.println(str);
+        }
     }
 }

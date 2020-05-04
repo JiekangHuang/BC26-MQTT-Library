@@ -15,7 +15,6 @@
 #define BAUDRATE_9600 9600
 #define BAUDRATE_19200 19200
 #define BAUDRATE_38400 38400
-#define BAUDRATE_115200 115200
 
 #define RX_BUFFSIZE 255
 #define TRY_COUNT_MAX 10
@@ -36,6 +35,8 @@ typedef enum
     ATE0,
     AT_CGATT,
     AT_CEDRXS_0,
+    AT_QSCLK_0,
+    AT_QCCLK,
 } BC26_SEND_CMD_E;
 
 typedef enum
@@ -78,6 +79,7 @@ class BC26 : public SoftwareSerial {
     bool chkMQTTOpen(void);
     bool chkMQTTConn(void);
     bool cloeEDRX(void);
+    bool closeSCLK(void);
 
   public:
     BC26(uint8_t rx_pin, uint8_t tx_pin);
@@ -87,10 +89,14 @@ class BC26 : public SoftwareSerial {
     bool closeMQTTClient(void);
     bool connectMQTTServer(const char *user, const char *key);
     bool publish(const char *topic, const char *msg, uint8_t qos = 0);
+    bool publish(const char *topic, int msg, uint8_t qos = 0);
     bool publish(const char *topic, long msg, uint8_t qos = 0);
     bool publish(const char *topic, double msg, uint8_t qos = 0);
+    bool publish(const char *topic, String msg, uint8_t qos = 0);
     bool subscribe(const char *topic, uint8_t qos = 0);
     bool readMsg(char *topic, char *msg);
+    bool getDate(char *buf);
+    bool getTime(char *buf);
 };
 
 #endif /* BC26_H */

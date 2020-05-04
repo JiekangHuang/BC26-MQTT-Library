@@ -1,9 +1,7 @@
 #include "bc26.h"
 
 static const char *send_cmd[] = {
-     "ATE0",
-     "AT+CGATT?",
-     "AT+CEDRXS=0",
+     "ATE0", "AT+CGATT?", "AT+CEDRXS=0", "AT+QSCLK=0", "AT+QCCLK?",
 };
 
 static const char *receive_cmd[] = {
@@ -23,8 +21,7 @@ int BC26::init(uint32_t baudrate, uint8_t band, const char *apn)
     if (apn == NULL) {
         return false;
     }
-    if (baudrate != BAUDRATE_9600 && baudrate != BAUDRATE_19200 && baudrate != BAUDRATE_38400 &&
-        baudrate != BAUDRATE_115200) {
+    if (baudrate != BAUDRATE_9600 && baudrate != BAUDRATE_19200 && baudrate != BAUDRATE_38400) {
         return false;
     }
     randomSeed(A0);
@@ -383,6 +380,11 @@ bool BC26::publish(const char *topic, const char *msg, uint8_t qos)
     return false;
 }
 
+bool BC26::publish(const char *topic, int msg, uint8_t qos)
+{
+    return this->publish(topic, (long)msg, qos);
+}
+
 bool BC26::publish(const char *topic, long msg, uint8_t qos)
 {
     char        temp_msg[20];
@@ -394,6 +396,11 @@ bool BC26::publish(const char *topic, long msg, uint8_t qos)
 bool BC26::publish(const char *topic, double msg, uint8_t qos)
 {
     return this->publish(topic, String(msg, 3).c_str(), qos);
+}
+
+bool BC26::publish(const char *topic, String msg, uint8_t qos)
+{
+    return this->publish(topic, msg.c_str(), qos);
 }
 
 bool BC26::subscribe(const char *topic, uint8_t qos)
@@ -410,7 +417,7 @@ bool BC26::subscribe(const char *topic, uint8_t qos)
     while (try_count++ < TRY_COUNT_MAX && this->chkMQTTConn()) {
         sprintf(temp_reply, "+QMTSUB: %d,", this->mqtt_client_id);
         sprintf(temp_cmd, "AT+QMTSUB=%d,%ld,\"%s\",%d", this->mqtt_client_id, msgID, topic, qos);
-        if (this->cloeEDRX()) {
+        if (this->cloeEDRX() && this->closeSCLK()) {
             if (this->sendCommandReply(temp_cmd, temp_reply, 5000)) {
                 char *find = strstr(this->buff, temp_reply);
                 if (find) {
@@ -450,6 +457,11 @@ bool BC26::cloeEDRX(void)
     return this->sendCommandReply(send_cmd[AT_CEDRXS_0], receive_cmd[OK], 1000);
 }
 
+bool BC26::closeSCLK(void)
+{
+    return this->sendCommandReply(send_cmd[AT_QSCLK_0], receive_cmd[OK], 1000);
+}
+
 bool BC26::readMsg(char *topic, char *msg)
 {
     if (topic == NULL || msg == NULL) {
@@ -464,6 +476,32 @@ bool BC26::readMsg(char *topic, char *msg)
         sscanf_P(find, PSTR("+QMTRECV: %d,0,\"%[^\",]\",\"%[^\"]"), &client_id, topic, msg);
         memset(this->buff, '\0', RX_BUFFSIZE);
         if (client_id == this->mqtt_client_id) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool BC26::getDate(char *buf)
+{
+    if (this->sendCommandReply(send_cmd[AT_QCCLK], receive_cmd[OK], 1000)) {
+        char *find = strstr(this->buff, "+QCCLK: ");
+        if (find) {
+            sscanf_P(find, PSTR("+QCCLK: %[^,],%*[^]"), buf);
+            memset(this->buff, '\0', RX_BUFFSIZE);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool BC26::getTime(char *buf)
+{
+    if (this->sendCommandReply(send_cmd[AT_QCCLK], receive_cmd[OK], 1000)) {
+        char *find = strstr(this->buff, "+QCCLK: ");
+        if (find) {
+            sscanf_P(find, PSTR("+QCCLK: %*[^,],%[^+]"), buf);
+            memset(this->buff, '\0', RX_BUFFSIZE);
             return true;
         }
     }
