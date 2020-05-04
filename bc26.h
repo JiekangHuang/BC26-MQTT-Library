@@ -33,18 +33,20 @@ typedef enum
 
 typedef enum
 {
-    ERROR_BC26_NONE,
-    ERROR_BC26_PTR_NULL,
-    ERROR_BC26_APN,
-    ERROR_BC26_BAUDRATE,
-    ERROR_BC26_MQTT_PORT,
-} BC26_ERR_CODE_E;
+    ATE0,
+    AT_CGATT,
+    AT_CEDRXS_0,
+} BC26_SEND_CMD_E;
+
+typedef enum
+{
+    OK,
+} BC26_RECEIVE_CMD_E;
 
 typedef enum
 {
     MQTT_QOS0,
     MQTT_QOS1,
-    MQTT_QOS2,
 } MQTT_QOS_E;
 
 typedef enum
@@ -66,8 +68,8 @@ class BC26 : public SoftwareSerial {
 
     void rx_data(void);
     void clearSerialBuff(void);
-    bool sendCommandOnly(char *cmd);
-    bool sendCommandReply(char *cmd, char *reply, uint32_t timeout);
+    bool sendCommandOnly(const char *cmd);
+    bool sendCommandReply(const char *cmd, const char *reply, uint32_t timeout);
     bool echoModeOff(void);
     bool chkNetwork(void);
     bool setBand(uint8_t band);
@@ -81,15 +83,14 @@ class BC26 : public SoftwareSerial {
     BC26(uint8_t rx_pin, uint8_t tx_pin);
     ~BC26();
     int  init(uint32_t baudrate, uint8_t band, const char *apn);
-    bool openMQTTClient(const char *host, uint16_t port);
+    bool openMQTTClient(const char *host, uint16_t port = 1883);
     bool closeMQTTClient(void);
     bool connectMQTTServer(const char *user, const char *key);
-    bool publish(const char *topic, char *msg, uint8_t qos);
-    bool publish(const char *topic, long msg, uint8_t qos);
-    bool publish(const char *topic, double msg, uint8_t qos);
-    bool subscribe(const char *topic, uint8_t qos);
-    bool subscribe(const char *topic);
-    bool readMag(char *topic, char *msg);
+    bool publish(const char *topic, const char *msg, uint8_t qos = 0);
+    bool publish(const char *topic, long msg, uint8_t qos = 0);
+    bool publish(const char *topic, double msg, uint8_t qos = 0);
+    bool subscribe(const char *topic, uint8_t qos = 0);
+    bool readMsg(char *topic, char *msg);
 };
 
 #endif /* BC26_H */

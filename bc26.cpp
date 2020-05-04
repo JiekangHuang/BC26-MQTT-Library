@@ -1,5 +1,15 @@
 #include "bc26.h"
 
+static const char *send_cmd[] = {
+     "ATE0",
+     "AT+CGATT?",
+     "AT+CEDRXS=0",
+};
+
+static const char *receive_cmd[] = {
+     "OK",
+};
+
 BC26::BC26(uint8_t rx_pin, uint8_t tx_pin) : SoftwareSerial(rx_pin, tx_pin)
 {
 }
@@ -11,11 +21,11 @@ BC26::~BC26()
 int BC26::init(uint32_t baudrate, uint8_t band, const char *apn)
 {
     if (apn == NULL) {
-        return ERROR_BC26_APN;
+        return false;
     }
     if (baudrate != BAUDRATE_9600 && baudrate != BAUDRATE_19200 && baudrate != BAUDRATE_38400 &&
         baudrate != BAUDRATE_115200) {
-        return ERROR_BC26_BAUDRATE;
+        return false;
     }
     randomSeed(A0);
     uint8_t try_count = 0;
@@ -42,7 +52,7 @@ int BC26::init(uint32_t baudrate, uint8_t band, const char *apn)
     return false;
 }
 
-bool BC26::sendCommandOnly(char *cmd)
+bool BC26::sendCommandOnly(const char *cmd)
 {
     if (cmd == NULL) {
         return false;
@@ -50,9 +60,10 @@ bool BC26::sendCommandOnly(char *cmd)
     clearSerialBuff();
     this->println(cmd);
     DEBUG_PRINT(cmd);
+    return true;
 }
 
-bool BC26::sendCommandReply(char *cmd, char *reply, uint32_t timeout)
+bool BC26::sendCommandReply(const char *cmd, const char *reply, uint32_t timeout)
 {
     if (cmd == NULL) {
         return false;
@@ -88,12 +99,12 @@ void BC26::clearSerialBuff(void)
 
 bool BC26::echoModeOff(void)
 {
-    return this->sendCommandReply("ATE0", "OK", 1000);
+    return this->sendCommandReply(send_cmd[ATE0], receive_cmd[OK], 1000);
 }
 
 bool BC26::chkNetwork(void)
 {
-    if (this->sendCommandReply("AT+CGATT?", "OK", 1000)) {
+    if (this->sendCommandReply(send_cmd[AT_CGATT], receive_cmd[OK], 1000)) {
         if (strstr(this->buff, "+CGATT: 0")) {
             DEBUG_PRINT(F("Net is not ok !!"));
             return false;
@@ -109,14 +120,14 @@ bool BC26::setBand(uint8_t band)
 {
     char temp_cmd[50];
     sprintf(temp_cmd, "AT+QBAND=1,%d", band);
-    return this->sendCommandReply(temp_cmd, "OK", 2000);
+    return this->sendCommandReply(temp_cmd, receive_cmd[OK], 2000);
 }
 
 bool BC26::setApn(const char *apn)
 {
     char temp_cmd[50];
     sprintf(temp_cmd, "AT+QCGDEFCONT=\"IP\",\"%s\"", apn);
-    return this->sendCommandReply(temp_cmd, "OK", 2000);
+    return this->sendCommandReply(temp_cmd, receive_cmd[OK], 2000);
 }
 
 bool BC26::setCops(const char *apn)
@@ -130,7 +141,7 @@ bool BC26::setCops(const char *apn)
     }
     if (gsm_load != 0) {
         sprintf(temp_cmd, "AT+COPS=1,2,\"%ld\"", gsm_load);
-        return this->sendCommandReply(temp_cmd, "OK", 2000);
+        return this->sendCommandReply(temp_cmd, receive_cmd[OK], 2000);
     }
     return false;
 }
@@ -138,10 +149,10 @@ bool BC26::setCops(const char *apn)
 bool BC26::openMQTTClient(const char *host, uint16_t port)
 {
     if (host == NULL) {
-        return ERROR_BC26_PTR_NULL;
+        return false;
     }
     if (port != MQTT_PORT_1883 && port != MQTT_PORT_8883) {
-        return ERROR_BC26_MQTT_PORT;
+        return false;
     }
     char temp_cmd[50], temp_reply[20];
     int  client_id = -1, result, try_count = 0;
@@ -192,7 +203,7 @@ bool BC26::chkMQTTOpen(void)
     char temp_cmd[] = "AT+QMTOPEN?", temp_reply[20];
     int  try_count  = 0;
     while (try_count++ < TRY_COUNT_MAX) {
-        if (this->sendCommandReply(temp_cmd, "OK", 2000)) {
+        if (this->sendCommandReply(temp_cmd, receive_cmd[OK], 2000)) {
             sprintf(temp_reply, "+QMTOPEN: %d,", this->mqtt_client_id);
             char *find = strstr(this->buff, temp_reply);
             if (find) {
@@ -239,7 +250,7 @@ bool BC26::chkMQTTConn(void)
     char temp_cmd[] = "AT+QMTCONN?", temp_reply[20];
     int  try_count  = 0;
     while (try_count++ < TRY_COUNT_MAX) {
-        if (this->sendCommandReply(temp_cmd, "OK", 2000)) {
+        if (this->sendCommandReply(temp_cmd, receive_cmd[OK], 2000)) {
             sprintf(temp_reply, "+QMTCONN: %d,%d", this->mqtt_client_id, MQTT_CONNECTED);
             char *find = strstr(this->buff, temp_reply);
             if (find) {
@@ -257,7 +268,7 @@ bool BC26::chkMQTTConn(void)
 bool BC26::connectMQTTServer(const char *user, const char *key)
 {
     if (user == NULL || key == NULL) {
-        return ERROR_BC26_PTR_NULL;
+        return false;
     }
     char temp_cmd[200], temp_reply[20];
     long random_id = random(65535);
@@ -323,10 +334,10 @@ bool BC26::connectMQTTServer(const char *user, const char *key)
     return false;
 }
 
-bool BC26::publish(const char *topic, char *msg, uint8_t qos)
+bool BC26::publish(const char *topic, const char *msg, uint8_t qos)
 {
     if (topic == NULL || msg == NULL) {
-        return ERROR_BC26_PTR_NULL;
+        return false;
     }
     if (qos != MQTT_QOS0 && qos != MQTT_QOS1) {
         qos = MQTT_QOS0;
@@ -374,22 +385,21 @@ bool BC26::publish(const char *topic, char *msg, uint8_t qos)
 
 bool BC26::publish(const char *topic, long msg, uint8_t qos)
 {
-    char temp_msg[20];
+    char        temp_msg[20];
+    const char *ptr = temp_msg;
     sprintf(temp_msg, "%ld", msg);
-    return this->publish(topic, temp_msg, qos);
+    return this->publish(topic, ptr, qos);
 }
 
 bool BC26::publish(const char *topic, double msg, uint8_t qos)
 {
-    char temp_msg[20];
-    dtostrf(msg, 8, 4, temp_msg);
-    return this->publish(topic, temp_msg, qos);
+    return this->publish(topic, String(msg, 3).c_str(), qos);
 }
 
 bool BC26::subscribe(const char *topic, uint8_t qos)
 {
     if (topic == NULL) {
-        return ERROR_BC26_PTR_NULL;
+        return false;
     }
     if (qos != MQTT_QOS0 && qos != MQTT_QOS1) {
         qos = MQTT_QOS0;
@@ -435,23 +445,18 @@ bool BC26::subscribe(const char *topic, uint8_t qos)
     return false;
 }
 
-bool BC26::subscribe(const char *topic)
-{
-    return this->subscribe(topic, MQTT_QOS0);
-}
-
 bool BC26::cloeEDRX(void)
 {
-    return this->sendCommandReply("AT+CEDRXS=0", "OK", 1000);
+    return this->sendCommandReply(send_cmd[AT_CEDRXS_0], receive_cmd[OK], 1000);
 }
 
-bool BC26::readMag(char *topic, char *msg)
+bool BC26::readMsg(char *topic, char *msg)
 {
     if (topic == NULL || msg == NULL) {
         return false;
     }
     char temp_reply[20];
-    int  client_id = -1, msg_id = -1;
+    int  client_id = -1;
     this->rx_data();
     sprintf(temp_reply, "+QMTRECV: %d,", this->mqtt_client_id);
     char *find = strstr(this->buff, temp_reply);

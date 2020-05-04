@@ -22,7 +22,7 @@ void setup()
 void loop()
 {
     char topic[50], msg[20];
-    if (client.readMag(topic, msg)) {
+    if (client.readMsg(topic, msg)) {
         Serial.print(F("Topic = "));
         Serial.println(topic);
         Serial.print(F("Massage = "));
