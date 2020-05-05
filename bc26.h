@@ -94,8 +94,8 @@ class BC26 : public SoftwareSerial {
     bool publish(const char *topic, String msg, uint8_t qos = 0);
     bool subscribe(const char *topic, uint8_t qos = 0);
     bool readMsg(char *topic, char *msg);
-    bool getDate(char *buf);
-    bool getTime(char *buf);
+    bool getDate(char *date);
+    bool getTime(char *time);
 };
 
 #endif /* BC26_H */

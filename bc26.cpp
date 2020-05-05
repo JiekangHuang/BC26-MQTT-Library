@@ -256,7 +256,6 @@ bool BC26::chkMQTTConn(void)
             } else {
                 return false;
             }
-            DEBUG_PRINT("here");
         }
     }
     return false;
@@ -482,12 +481,12 @@ bool BC26::readMsg(char *topic, char *msg)
     return false;
 }
 
-bool BC26::getDate(char *buf)
+bool BC26::getDate(char *date)
 {
     if (this->sendCommandReply(send_cmd[AT_QCCLK], receive_cmd[OK], 1000)) {
         char *find = strstr(this->buff, "+QCCLK: ");
         if (find) {
-            sscanf_P(find, PSTR("+QCCLK: %[^,],%*[^]"), buf);
+            sscanf_P(find, PSTR("+QCCLK: %[^,],%*[^]"), date);
             memset(this->buff, '\0', RX_BUFFSIZE);
             return true;
         }
@@ -495,12 +494,12 @@ bool BC26::getDate(char *buf)
     return false;
 }
 
-bool BC26::getTime(char *buf)
+bool BC26::getTime(char *time)
 {
     if (this->sendCommandReply(send_cmd[AT_QCCLK], receive_cmd[OK], 1000)) {
         char *find = strstr(this->buff, "+QCCLK: ");
         if (find) {
-            sscanf_P(find, PSTR("+QCCLK: %*[^,],%[^+]"), buf);
+            sscanf_P(find, PSTR("+QCCLK: %*[^,],%[^+]"), time);
             memset(this->buff, '\0', RX_BUFFSIZE);
             return true;
         }
