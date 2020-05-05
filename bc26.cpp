@@ -24,7 +24,7 @@ int BC26::init(uint32_t baudrate, uint8_t band, const char *apn)
     if (baudrate != BAUDRATE_9600 && baudrate != BAUDRATE_19200 && baudrate != BAUDRATE_38400) {
         return false;
     }
-    randomSeed(A0);
+    randomSeed(analogRead(A0));
     uint8_t try_count = 0;
     memset(this->buff, '\0', RX_BUFFSIZE);
     this->begin(baudrate);
