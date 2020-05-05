@@ -20,7 +20,6 @@
 #define TRY_COUNT_MAX 10
 
 #define MQTT_PORT_1883 1883
-#define MQTT_PORT_8883 8883
 
 typedef enum
 {

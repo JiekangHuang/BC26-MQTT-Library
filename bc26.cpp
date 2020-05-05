@@ -148,7 +148,7 @@ bool BC26::openMQTTClient(const char *host, uint16_t port)
     if (host == NULL) {
         return false;
     }
-    if (port != MQTT_PORT_1883 && port != MQTT_PORT_8883) {
+    if (port != MQTT_PORT_1883) {
         return false;
     }
     char temp_cmd[50], temp_reply[20];
