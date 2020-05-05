@@ -5,12 +5,13 @@
 #include <string.h>
 
 #define DEBUG_MODE false
-#if DEBUG_MODE
 #define debugSerial Serial
+#if DEBUG_MODE
 #define DEBUG_PRINT(x) debugSerial.println(x)
 #else
 #define DEBUG_PRINT(x)
 #endif
+#define ERRPR(x) debugSerial.println(x)
 
 #define BAUDRATE_9600 9600
 #define BAUDRATE_19200 19200
@@ -82,7 +83,7 @@ class BC26 : public SoftwareSerial {
 
   public:
     BC26(uint8_t rx_pin, uint8_t tx_pin);
-    ~BC26();
+    ~BC26();     // Dead Destructor
     int  init(uint32_t baudrate, uint8_t band, const char *apn);
     bool openMQTTClient(const char *host, uint16_t port = 1883);
     bool closeMQTTClient(void);

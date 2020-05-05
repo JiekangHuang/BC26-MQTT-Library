@@ -40,7 +40,7 @@ int BC26::init(uint32_t baudrate, uint8_t band, const char *apn)
             }
         }
         if (try_count >= TRY_COUNT_MAX) {
-            DEBUG_PRINT(F("BC26 NetWork Error !!"));
+            ERRPR(F("BC26 NetWork Error !!"));
         } else {
             DEBUG_PRINT(F("BC26 NetWork OK !!"));
             return true;
@@ -168,25 +168,25 @@ bool BC26::openMQTTClient(const char *host, uint16_t port)
                     switch (result) {
                     default:
                     case -1:
-                        DEBUG_PRINT(F("Failed to open network"));
+                        ERRPR(F("Failed to open network"));
                     case 0:
-                        DEBUG_PRINT(F("Opened network successfully"));
+                        ERRPR(F("Opened network successfully"));
                         return true;
                         break;
                     case 1:
-                        DEBUG_PRINT(F("Wrong parameter"));
+                        ERRPR(F("Wrong parameter"));
                         break;
                     case 2:
-                        DEBUG_PRINT(F("MQTT identifier is occupied"));
+                        ERRPR(F("MQTT identifier is occupied"));
                         break;
                     case 3:
-                        DEBUG_PRINT(F("Failed to activate PDP"));
+                        ERRPR(F("Failed to activate PDP"));
                         break;
                     case 4:
-                        DEBUG_PRINT(F("Failed to parse domain name"));
+                        ERRPR(F("Failed to parse domain name"));
                         break;
                     case 5:
-                        DEBUG_PRINT(F("Network disconnection error"));
+                        ERRPR(F("Network disconnection error"));
                         break;
                     }
             }
@@ -286,32 +286,32 @@ bool BC26::connectMQTTServer(const char *user, const char *key)
                             DEBUG_PRINT(F("Sent packet successfully and received ACK fromserver"));
                             break;
                         case 1:
-                            DEBUG_PRINT(F("Packet retransmission"));
+                            ERRPR(F("Packet retransmission"));
                             break;
                         case 2:
-                            DEBUG_PRINT(F("Failed to send packet"));
+                            ERRPR(F("Failed to send packet"));
                             break;
                         default:
                             break;
                         }
                         switch (ret_code) {
                         case 0:
-                            DEBUG_PRINT(F("Connection Accepted"));
+                            ERRPR(F("Connection Accepted"));
                             break;
                         case 1:
-                            DEBUG_PRINT(F("Connection Refused: Unacceptable Protocol Version"));
+                            ERRPR(F("Connection Refused: Unacceptable Protocol Version"));
                             break;
                         case 2:
-                            DEBUG_PRINT(F("Connection Refused: Identifier Rejected"));
+                            ERRPR(F("Connection Refused: Identifier Rejected"));
                             break;
                         case 3:
-                            DEBUG_PRINT(F("Connection Refused: Server Unavailable"));
+                            ERRPR(F("Connection Refused: Server Unavailable"));
                             break;
                         case 4:
-                            DEBUG_PRINT(F("Connection Refused: Bad User Name or Password"));
+                            ERRPR(F("Connection Refused: Bad User Name or Password"));
                             break;
                         case 5:
-                            DEBUG_PRINT(F("Connection Refused: Not Authorized"));
+                            ERRPR(F("Connection Refused: Not Authorized"));
                             break;
                         default:
                             break;
@@ -363,10 +363,10 @@ bool BC26::publish(const char *topic, const char *msg, uint8_t qos)
                         return true;
                         break;
                     case 1:
-                        DEBUG_PRINT(F("Packet retransmission"));
+                        ERRPR(F("Packet retransmission"));
                         break;
                     case 2:
-                        DEBUG_PRINT(F("Failed to send packet"));
+                        ERRPR(F("Failed to send packet"));
                         break;
                     default:
                         break;
@@ -375,7 +375,7 @@ bool BC26::publish(const char *topic, const char *msg, uint8_t qos)
             }
         }
     }
-    DEBUG_PRINT(F("BC26 PUBLISH Failed !!"));
+    ERRPR(F("BC26 PUBLISH Failed !!"));
     return false;
 }
 
@@ -431,23 +431,23 @@ bool BC26::subscribe(const char *topic, uint8_t qos)
                             return true;
                             break;
                         case 1:
-                            DEBUG_PRINT(F("Packet retransmission"));
+                            ERRPR(F("Packet retransmission"));
                             break;
                         case 2:
-                            DEBUG_PRINT(F("Failed to send packet"));
+                            ERRPR(F("Failed to send packet"));
                             break;
                         default:
                             break;
                         }
                     } else if (temp_qos == 128) {
-                        DEBUG_PRINT(F("subscription was rejected by the server"));
+                        ERRPR(F("subscription was rejected by the server"));
                         return false;
                     }
                 }
             }
         }
     }
-    DEBUG_PRINT(F("BC26 SUNSCRIBE Failed !!"));
+    ERRPR(F("BC26 SUNSCRIBE Failed !!"));
     return false;
 }
 
