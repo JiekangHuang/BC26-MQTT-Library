@@ -40,7 +40,7 @@ int BC26::init(uint32_t baudrate, uint8_t band, const char *apn)
             }
         }
         if (try_count >= TRY_COUNT_MAX) {
-            ERRPR(F("BC26 NetWork Error !!"));
+            ERROR(F("BC26 NetWork Error !!"));
         } else {
             DEBUG_PRINT(F("BC26 NetWork OK !!"));
             return true;
@@ -168,25 +168,25 @@ bool BC26::openMQTTClient(const char *host, uint16_t port)
                     switch (result) {
                     default:
                     case -1:
-                        ERRPR(F("Failed to open network"));
+                        ERROR(F("Failed to open network"));
                     case 0:
-                        ERRPR(F("Opened network successfully"));
+                        ERROR(F("Opened network successfully"));
                         return true;
                         break;
                     case 1:
-                        ERRPR(F("Wrong parameter"));
+                        ERROR(F("Wrong parameter"));
                         break;
                     case 2:
-                        ERRPR(F("MQTT identifier is occupied"));
+                        ERROR(F("MQTT identifier is occupied"));
                         break;
                     case 3:
-                        ERRPR(F("Failed to activate PDP"));
+                        ERROR(F("Failed to activate PDP"));
                         break;
                     case 4:
-                        ERRPR(F("Failed to parse domain name"));
+                        ERROR(F("Failed to parse domain name"));
                         break;
                     case 5:
-                        ERRPR(F("Network disconnection error"));
+                        ERROR(F("Network disconnection error"));
                         break;
                     }
             }
@@ -286,32 +286,32 @@ bool BC26::connectMQTTServer(const char *user, const char *key)
                             DEBUG_PRINT(F("Sent packet successfully and received ACK fromserver"));
                             break;
                         case 1:
-                            ERRPR(F("Packet retransmission"));
+                            ERROR(F("Packet retransmission"));
                             break;
                         case 2:
-                            ERRPR(F("Failed to send packet"));
+                            ERROR(F("Failed to send packet"));
                             break;
                         default:
                             break;
                         }
                         switch (ret_code) {
                         case 0:
-                            ERRPR(F("Connection Accepted"));
+                            ERROR(F("Connection Accepted"));
                             break;
                         case 1:
-                            ERRPR(F("Connection Refused: Unacceptable Protocol Version"));
+                            ERROR(F("Connection Refused: Unacceptable Protocol Version"));
                             break;
                         case 2:
-                            ERRPR(F("Connection Refused: Identifier Rejected"));
+                            ERROR(F("Connection Refused: Identifier Rejected"));
                             break;
                         case 3:
-                            ERRPR(F("Connection Refused: Server Unavailable"));
+                            ERROR(F("Connection Refused: Server Unavailable"));
                             break;
                         case 4:
-                            ERRPR(F("Connection Refused: Bad User Name or Password"));
+                            ERROR(F("Connection Refused: Bad User Name or Password"));
                             break;
                         case 5:
-                            ERRPR(F("Connection Refused: Not Authorized"));
+                            ERROR(F("Connection Refused: Not Authorized"));
                             break;
                         default:
                             break;
@@ -360,13 +360,14 @@ bool BC26::publish(const char *topic, const char *msg, uint8_t qos)
                     case 0:
                         DEBUG_PRINT(F("Sent packet successfully and received ACK from server"));
                         DEBUG_PRINT(F("BC26 PUBLISH SUCCESS !!"));
+                        ERROR(F("BC26 PUBLISH SUCCESS !!"));
                         return true;
                         break;
                     case 1:
-                        ERRPR(F("Packet retransmission"));
+                        ERROR(F("Packet retransmission"));
                         break;
                     case 2:
-                        ERRPR(F("Failed to send packet"));
+                        ERROR(F("Failed to send packet"));
                         break;
                     default:
                         break;
@@ -375,7 +376,7 @@ bool BC26::publish(const char *topic, const char *msg, uint8_t qos)
             }
         }
     }
-    ERRPR(F("BC26 PUBLISH Failed !!"));
+    ERROR(F("BC26 PUBLISH Failed !!"));
     return false;
 }
 
@@ -431,23 +432,23 @@ bool BC26::subscribe(const char *topic, uint8_t qos)
                             return true;
                             break;
                         case 1:
-                            ERRPR(F("Packet retransmission"));
+                            ERROR(F("Packet retransmission"));
                             break;
                         case 2:
-                            ERRPR(F("Failed to send packet"));
+                            ERROR(F("Failed to send packet"));
                             break;
                         default:
                             break;
                         }
                     } else if (temp_qos == 128) {
-                        ERRPR(F("subscription was rejected by the server"));
+                        ERROR(F("subscription was rejected by the server"));
                         return false;
                     }
                 }
             }
         }
     }
-    ERRPR(F("BC26 SUNSCRIBE Failed !!"));
+    ERROR(F("BC26 SUNSCRIBE Failed !!"));
     return false;
 }
 

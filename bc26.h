@@ -11,7 +11,7 @@
 #else
 #define DEBUG_PRINT(x)
 #endif
-#define ERRPR(x) debugSerial.println(x)
+#define ERROR(x) debugSerial.println(x)
 
 #define BAUDRATE_9600 9600
 #define BAUDRATE_19200 19200
@@ -61,7 +61,7 @@ typedef enum
 class BC26 : public SoftwareSerial {
   private:
     uint8_t  mqtt_client_id;
-    char     mqtt_host[20];
+    char     mqtt_host[30];
     uint16_t mqtt_port;
     char     username[50];
     char     key[50];
