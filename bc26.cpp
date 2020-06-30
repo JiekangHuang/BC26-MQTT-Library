@@ -276,6 +276,9 @@ bool BC26::connectMQTTServer(const char *user, const char *key)
             random_id, this->username, this->key);
     while (try_count++ < TRY_COUNT_MAX) {
         if (!this->chkMQTTConn()) {
+            if (!this->chkMQTTOpen()) {
+                this->openMQTTClient(this->mqtt_host, this->mqtt_port);
+            }
             if (this->sendCommandReply(temp_cmd, temp_reply, 10000)) {
                 char *find = strstr(this->buff, temp_reply);
                 if (find) {

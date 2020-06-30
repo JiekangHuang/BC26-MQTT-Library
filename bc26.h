@@ -4,7 +4,7 @@
 #include <SoftwareSerial.h>
 #include <string.h>
 
-#define DEBUG_MODE false
+#define DEBUG_MODE true
 #define debugSerial Serial
 #if DEBUG_MODE
 #define DEBUG_PRINT(x) debugSerial.println(x)
