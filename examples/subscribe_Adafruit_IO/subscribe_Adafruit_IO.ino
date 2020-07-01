@@ -1,31 +1,26 @@
 #include "bc26.h"
 
-const char *apn   = "<YOUR APN>";
-const char *host  = "io.adafruit.com";
-const char *user  = "<YOUR USERNAME>";
-const char *key   = "<YOUR ACTIVE KEY>";
-const char *topic = "<YUOR TOPIC>";
-char        msg[] = "12345";
-
-BC26 client(8, 9);
+String apn   = "<YOUR APN>";
+String host  = "io.adafruit.com";
+String user  = "<YOUR USERNAME>";
+String key   = "<YOUR ACTIVE KEY>";
+String topic = "<YUOR TOPIC>";
 
 void setup()
 {
     Serial.begin(BAUDRATE_38400);
-    client.init(BAUDRATE_38400, BAND_8, apn);
-    client.openMQTTClient(host, MQTT_PORT_1883);
-    client.connectMQTTServer(user, key);
-    client.subscribe(topic, MQTT_QOS0);
-    client.publish(topic, msg, MQTT_QOS0);
+    // bc26 init
+    BC26Init(BAUDRATE_38400, apn, BAND_8);
+    // connect to server
+    BC26ConnectMQTTServer(host, user, key, MQTT_PORT_1883);
+    // Subscribe topic
+    BC26MQTTSubscribe(topic, MQTT_QOS0);
 }
 
 void loop()
 {
-    char topic[50], msg[20];
-    if (client.readMsg(topic, msg)) {
-        Serial.print(F("Topic = "));
-        Serial.println(topic);
-        Serial.print(F("Massage = "));
-        Serial.println(msg);
+    String message;
+    if (readBC26MQTTMsg(topic, message)) {
+        Serial.println(message);
     }
 }
