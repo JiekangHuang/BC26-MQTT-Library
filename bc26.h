@@ -4,7 +4,7 @@
 #include <SoftwareSerial.h>
 #include <string.h>
 
-#define DEBUG_MODE true
+#define DEBUG_MODE false
 #define debugSerial Serial
 #if DEBUG_MODE
 #define DEBUG_PRINT(x) debugSerial.println(x)
@@ -35,9 +35,9 @@ typedef enum
 
 bool BC26Init(long baudrate, String apn, int band);
 bool BC26ConnectMQTTServer(String host, String user, String key, int port);
-bool BC26MQTTPublish(String topic, String msg, int qos);
-bool BC26MQTTSubscribe(String topic, int qos);
+bool BC26MQTTPublish(const char *topic, char *msg, int qos);
+bool BC26MQTTSubscribe(const char *topic, int qos);
 int  getBC26CSQ(void);
-bool readBC26MQTTMsg(String topic, String &msg);
+bool readBC26MQTTMsg(const char *topic, char *msg);
 
 #endif /* BC26_H */

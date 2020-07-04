@@ -1,11 +1,10 @@
 #include "bc26.h"
 
-String apn         = "<YOUR APN>";
-String host        = "iiot.ideaschain.com.tw";
-String user        = "<YOUR ACCESS TOKEN>";
-String key         = "";     // empty
-String topic       = "v1/devices/me/telemetry";
-String device_name = "<YOUR DEVICE NAME>";
+#define apn "<YOUR APN>"
+#define host "iiot.ideaschain.com.tw"
+#define user "<YOUR ACCESS TOKEN>"
+#define key ""     // empty
+const char *topic = "v1/devices/me/telemetry";
 
 void setup()
 {
@@ -19,8 +18,10 @@ void setup()
 void loop()
 {
     static unsigned long timer = millis();
+    char                 buff[100];
     if (millis() - timer >= 10000) {
         timer = millis();
-        BC26MQTTPublish(topic, "{\"boot time\":" + millis() / 1000 + "}", MQTT_QOS0);
+        sprintf(buff, "{\"boot time\":%d}", millis() / 1000);
+        BC26MQTTPublish(topic, buff, MQTT_QOS0);
     }
 }

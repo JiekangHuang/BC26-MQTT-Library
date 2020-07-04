@@ -1,16 +1,16 @@
 #include "bc26.h"
 
-String apn   = "<YOUR APN>";
-String host  = "io.adafruit.com";
-String user  = "<YOUR USERNAME>";
-String key   = "<YOUR ACTIVE KEY>";
-String topic = "<YUOR TOPIC>";
+#define apn "<YOUR APN>"
+#define host "io.adafruit.com"
+#define user "<YOUR USERNAME>"
+#define key "<YOUR ACTIVE KEY>"
+const char *topic = "<YUOR TOPIC>";
 
 void setup()
 {
-    Serial.begin(BAUDRATE_38400);
+    Serial.begin(BAUDRATE_9600);
     // bc26 init
-    BC26Init(BAUDRATE_38400, apn, BAND_8);
+    BC26Init(BAUDRATE_9600, apn, BAND_8);
     // connect to server
     BC26ConnectMQTTServer(host, user, key, MQTT_PORT_1883);
     // Subscribe topic
@@ -19,7 +19,7 @@ void setup()
 
 void loop()
 {
-    String message;
+    char message[100];
     if (readBC26MQTTMsg(topic, message)) {
         Serial.println(message);
     }
