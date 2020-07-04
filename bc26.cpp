@@ -119,6 +119,9 @@ bool BC26MQTTPublish(const char *topic, char *msg, int qos)
     while (!_BC26SendCmdReplyC(buff, "+QMTPUB: 0,0,0", 10000)) {
         BC26ConnectMQTTServer(bc26_host, bc26_user, bc26_key, bc26_port);
     }
+    Serial.print(F("Publish :("));
+    Serial.print(msg);
+    Serial.println(F(") Successfully"));
     return true;
 }
 
