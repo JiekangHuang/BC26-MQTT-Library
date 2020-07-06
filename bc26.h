@@ -33,7 +33,7 @@ typedef enum
     BAND_28 = 28,
 } BC26_BAND;
 
-bool BC26Init(long baudrate, String apn, int band);
+bool BC26Init(long baudrate, const char *apn, int band);
 bool BC26ConnectMQTTServer(const char *host, const char *user, const char *key, int port);
 bool BC26MQTTPublish(const char *topic, char *msg, int qos);
 bool BC26MQTTSubscribe(const char *topic, int qos);
