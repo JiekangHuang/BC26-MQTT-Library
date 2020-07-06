@@ -1,6 +1,7 @@
 #include "bc26.h"
 
-static String         bc26_buff, bc26_host, bc26_user, bc26_key;
+static String         bc26_buff;
+static char           bc26_host[40], bc26_user[40], bc26_key[50];
 static int            bc26_port;
 static SoftwareSerial bc26(8, 9);
 
@@ -79,26 +80,27 @@ bool BC26Init(long baudrate, String apn, int band)
     return true;
 }
 
-bool BC26ConnectMQTTServer(String host, String user, String key, int port)
+bool BC26ConnectMQTTServer(const char *host, const char *user, const char *key, int port)
 {
     long random_id = random(65535);
-    bc26_host      = host;
-    bc26_user      = user;
-    bc26_key       = key;
-    bc26_port      = port;
+    strcpy(bc26_host, host);
+    strcpy(bc26_user, user);
+    strcpy(bc26_key, key);
+    bc26_port = port;
+
+    char buff[255];
 
     while (!_BC26SendCmdReplyS("AT+QMTCONN?", "+QMTCONN: 0,3", 2000)) {
         while (!_BC26SendCmdReplyS("AT+QMTOPEN?", "+QMTOPEN: 0,", 2000)) {
-            if (_BC26SendCmdReplyS("AT+QMTOPEN=0,\"" + host + "\"," + String(port, DEC),
-                                   "+QMTOPEN: 0,0", 20000)) {
+            sprintf(buff, "AT+QMTOPEN=0,\"%s\",%d", host, port);
+            if (_BC26SendCmdReplyS(buff, "+QMTOPEN: 0,0", 20000)) {
                 Serial.println(F("Opened MQTT Channel Successfully"));
             } else {
                 Serial.println(F("Failed to open MQTT Channel"));
             }
         }
-        if (_BC26SendCmdReplyS("AT+QMTCONN=0,\"Arduino_BC26_" + String(random_id, DEC) + "\",\"" +
-                                    user + "\",\"" + key + "\"",
-                               "+QMTCONN: 0,0,0", 20000)) {
+        sprintf(buff, "AT+QMTCONN=0,\"Arduino_BC26_%ld\",\"%s\",\"%s\"", random_id, user, key);
+        if (_BC26SendCmdReplyS(buff, "+QMTCONN: 0,0,0", 20000)) {
         } else {
             Serial.println(F("Failed to Connect MQTT Server"));
         }
