@@ -11,6 +11,9 @@ static bool _BC26SendCmdReply(const char *cmd, const char *reply, unsigned long 
 {
     bc26_buff = "";
     DEBUG_PRINT(cmd);
+    while (bc26.available()) {
+        bc26.read();
+    }
     bc26.println(cmd);
     unsigned long timer = millis();
     while (millis() - timer < timeout) {
@@ -22,36 +25,43 @@ static bool _BC26SendCmdReply(const char *cmd, const char *reply, unsigned long 
             return true;
         }
     }
+    if (bc26_buff == "") {
+        // BC26 module no response
+        Serial.println(F("BC26 module no response ! Please Power off and power on again !!"));
+        while (true)
+            ;
+    } else {
+        DEBUG_PRINT(bc26_buff);
+    }
     return false;
 }
 
 bool BC26Init(long baudrate, const char *apn, int band)
 {
     char buff[100];
-    bool result = true;
+    bool result;
     // set random seed
     randomSeed(analogRead(A0));
-    // wait boot
-    Serial.println(F("Wait BC26 boot....."));
-    delay(5000);
     long gsm_load = 46692;
     // init nbiot SoftwareSerial
     bc26.begin(baudrate);
-    // echo mode off
-    result &= _BC26SendCmdReply("ATE0", "OK", 2000);
-    // set band
-    sprintf(buff, "AT+QBAND=1,%d", band);
-    result &= _BC26SendCmdReply(buff, "OK", 2000);
-    // close EDRX
-    result &= _BC26SendCmdReply("AT+CEDRXS=0", "OK", 2000);
-    // close SCLK
-    result &= _BC26SendCmdReply("AT+QSCLK=0", "OK", 2000);
-
-    if (!result) {
-        Serial.println(F("BC26 No response ! Please Power off and power on again !!"));
-        while (true)
-            ;
-    }
+    do {
+        result = true;
+        // wait bc26 module reboot
+        Serial.println(F("Wait BC26 module reboot..."));
+        //  reset bc26 module
+        result &= _BC26SendCmdReply("AT+QRST=1", "+CPIN: READY", 5000);
+        // echo mode off
+        result &= _BC26SendCmdReply("ATE0", "OK", 2000);
+        // set band
+        sprintf(buff, "AT+QBAND=1,%d", band);
+        result &= _BC26SendCmdReply(buff, "OK", 2000);
+        // close EDRX
+        result &= _BC26SendCmdReply("AT+CEDRXS=0", "OK", 2000);
+        // close SCLK
+        result &= _BC26SendCmdReply("AT+QSCLK=0", "OK", 2000);
+    } while (!result);
+    delay(6000);
 
     while (!_BC26SendCmdReply("AT+CGATT?", "+CGATT: 1", 2000)) {
         if (strcmp(apn, "internet.iot") != -1) {
