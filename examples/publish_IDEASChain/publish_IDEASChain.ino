@@ -1,9 +1,9 @@
 #include "bc26.h"
 
-#define apn "<YOUR APN>"
-#define host "iiot.ideaschain.com.tw"
-#define user "<YOUR ACCESS TOKEN>"
-#define key ""     // empty
+const char *apn   = "<YOUR APN>";
+const char *host  = "iiot.ideaschain.com.tw";
+const char *user  = "<YOUR ACCESS TOKEN>";
+const char *key   = "";     // empty
 const char *topic = "v1/devices/me/telemetry";
 
 void setup()

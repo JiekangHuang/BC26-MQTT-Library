@@ -6,11 +6,11 @@
 // #define key "<YOUR ACTIVE KEY>"
 // const char *topic = "<YUOR TOPIC>";
 
-#define apn "internet.iot"
-#define host "io.adafruit.com"
-#define user "Zack_Huang"
-#define key "aio_ysiC89jibMOlFOlSH923PFiTNfPf"
-const char *topic = "Zack_Huang/feeds/pi-data";
+const char *apn   = "<YOUR APN>";
+const char *host  = "io.adafruit.com";
+const char *user  = "<YOUR USERNAME>";
+const char *key   = "<YOUR ACTIVE KEY>";
+const char *topic = "<YOUT TOPIC>";
 
 void setup()
 {

@@ -1,9 +1,9 @@
 #include "bc26.h"
 
-#define apn "<YOUR APN>"
-#define host "io.adafruit.com"
-#define user "<YOUR USERNAME>"
-#define key "<YOUR ACTIVE KEY>"
+const char *apn   = "<YOUR APN>";
+const char *host  = "io.adafruit.com";
+const char *user  = "<YOUR USERNAME>";
+const char *key   = "<YOUR ACTIVE KEY>";
 const char *topic = "<YUOR TOPIC>";
 
 void setup()
