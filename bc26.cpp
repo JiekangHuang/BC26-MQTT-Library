@@ -28,22 +28,28 @@ static bool _BC26SendCmdReply(const char *cmd, const char *reply, unsigned long 
 bool BC26Init(long baudrate, const char *apn, int band)
 {
     char buff[100];
+    bool result = true;
     // set random seed
     randomSeed(analogRead(A0));
     // wait boot
+    Serial.println(F("Wait BC26 boot....."));
     delay(5000);
     long gsm_load = 46692;
     // init nbiot SoftwareSerial
     bc26.begin(baudrate);
     // echo mode off
-    _BC26SendCmdReply("ATE0", "OK", 2000);
+    result &= _BC26SendCmdReply("ATE0", "OK", 2000);
     // set band
     sprintf(buff, "AT+QBAND=1,%d", band);
-    _BC26SendCmdReply(buff, "OK", 2000);
+    result &= _BC26SendCmdReply(buff, "OK", 2000);
     // close EDRX
-    _BC26SendCmdReply("AT+CEDRXS=0", "OK", 2000);
+    result &= _BC26SendCmdReply("AT+CEDRXS=0", "OK", 2000);
     // close SCLK
-    _BC26SendCmdReply("AT+QSCLK=0", "OK", 2000);
+    result &= _BC26SendCmdReply("AT+QSCLK=0", "OK", 2000);
+
+    if (!result) {
+        Serial.println(F("BC26 No response ! Please Power off and power on again !!"));
+    }
 
     while (!_BC26SendCmdReply("AT+CGATT?", "+CGATT: 1", 2000)) {
         if (strcmp(apn, "internet.iot") != -1) {
