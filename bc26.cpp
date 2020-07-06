@@ -49,6 +49,8 @@ bool BC26Init(long baudrate, const char *apn, int band)
 
     if (!result) {
         Serial.println(F("BC26 No response ! Please Power off and power on again !!"));
+        while (true)
+            ;
     }
 
     while (!_BC26SendCmdReply("AT+CGATT?", "+CGATT: 1", 2000)) {
