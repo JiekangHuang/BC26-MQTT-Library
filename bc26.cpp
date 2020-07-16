@@ -71,7 +71,7 @@ bool BC26Init(long baudrate, const char *apn, int band)
         } else {
             Serial.println(F("apn error !!"));
         }
-        Serial.println(F("Connect to 4GAP....."));
+        Serial.println(F("Connect to 4G BS....."));
         sprintf(buff, "AT+COPS=1,2,\"%ld\"", gsm_load);
         if (_BC26SendCmdReply(buff, "OK", 20000)) {
             Serial.println(F("Network is ok !!"));
