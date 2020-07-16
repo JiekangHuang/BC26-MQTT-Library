@@ -158,23 +158,21 @@ int getBC26CSQ(void)
     return -1;
 }
 
-bool readBC26MQTTMsg(const char *topic, char *msg)
+bool readBC26MQTTMsg(char *msg)
 {
     char *head, *tail;
-    char  buff[50];
     bc26_buff = "";
 
     if (bc26.available()) {
         bc26_buff += bc26.readStringUntil('\n');
-        sprintf(buff, "+QMTRECV: 0,0,\"%s\",\"", topic);
-        head = strstr(bc26_buff.c_str(), buff);
+        head = strstr(bc26_buff.c_str(), "+QMTRECV: 0,0,");
         if (head) {
             DEBUG_PRINT("receive:");
             DEBUG_PRINT(bc26_buff);
             DEBUG_PRINT(head);
-            head += (15 + strlen(topic) + 3);
+            head += 14;
             DEBUG_PRINT(head);
-            tail = strstr(head, "\"");
+            tail = strstr(head, "\r");
             DEBUG_PRINT(tail);
             strncpy(msg, head, tail - head);
             msg[tail - head] = '\0';

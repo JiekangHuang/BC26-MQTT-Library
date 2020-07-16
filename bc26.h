@@ -38,6 +38,6 @@ bool BC26ConnectMQTTServer(const char *host, const char *user, const char *key, 
 bool BC26MQTTPublish(const char *topic, char *msg, int qos);
 bool BC26MQTTSubscribe(const char *topic, int qos);
 int  getBC26CSQ(void);
-bool readBC26MQTTMsg(const char *topic, char *msg);
+bool readBC26MQTTMsg(char *msg);
 
 #endif /* BC26_H */

@@ -20,7 +20,7 @@ void setup()
 void loop()
 {
     char message[100];
-    if (readBC26MQTTMsg(topic, message)) {
+    if (readBC26MQTTMsg(message)) {
         Serial.println(message);
     }
 }
