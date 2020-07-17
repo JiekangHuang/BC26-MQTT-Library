@@ -45,7 +45,6 @@ bool BC26Init(long baudrate, const char *apn, int band)
     bool result;
     // set random seed
     randomSeed(analogRead(A0));
-    long gsm_load = 46692;
     // init nbiot SoftwareSerial
     bc26.begin(baudrate);
     do {
@@ -56,6 +55,9 @@ bool BC26Init(long baudrate, const char *apn, int band)
         result &= _BC26SendCmdReply("AT+QRST=1", "+CPIN: READY", 5000);
         // echo mode off
         result &= _BC26SendCmdReply("ATE0", "OK", 2000);
+        // set apn
+        sprintf(buff, "AT+QCGDEFCONT=\"IP\",\"%s\"", apn);
+        result &= _BC26SendCmdReply(buff, "OK", 2000);
         // set band
         sprintf(buff, "AT+QBAND=1,%d", band);
         result &= _BC26SendCmdReply(buff, "OK", 2000);
@@ -64,24 +66,18 @@ bool BC26Init(long baudrate, const char *apn, int band)
         // close SCLK
         result &= _BC26SendCmdReply("AT+QSCLK=0", "OK", 2000);
     } while (!result);
-    delay(6000);
 
-    while (!_BC26SendCmdReply("AT+CGATT?", "+CGATT: 1", 2000)) {
-        if (strcmp(apn, "internet.iot") != -1) {
-            gsm_load = 46692;
-        } else if (strcmp(apn, "twm.nbiot") != -1) {
-            gsm_load = 46697;
-        } else {
-            Serial.println(F("apn error !!"));
-        }
+    if (!_BC26SendCmdReply("AT+CGATT?", "+CGATT: 1", 2000)) {
         Serial.println(F("Connect to 4G BS....."));
-        sprintf(buff, "AT+COPS=1,2,\"%ld\"", gsm_load);
-        if (_BC26SendCmdReply(buff, "OK", 30000)) {
+        if (_BC26SendCmdReply("AT", "+IP:", 60000)) {
             Serial.println(F("Network is ok !!"));
+            return true;
         } else {
             Serial.println(F("Network is not ok !!"));
+            return false;
         }
     }
+    Serial.println(F("Network is ok !!"));
     return true;
 }
 
