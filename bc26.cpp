@@ -1,9 +1,12 @@
 #include "bc26.h"
 
+#define NUM_OF_SUB 5
+
 static String         bc26_buff;
 static char           bc26_host[40], bc26_user[40], bc26_key[50];
 static int            bc26_port;
 static SoftwareSerial bc26(8, 9);
+subscribe_t           sub_arr[NUM_OF_SUB];
 
 static bool _BC26SendCmdReply(const char *cmd, const char *reply, unsigned long timeout);
 
@@ -73,7 +76,7 @@ bool BC26Init(long baudrate, const char *apn, int band)
         }
         Serial.println(F("Connect to 4G BS....."));
         sprintf(buff, "AT+COPS=1,2,\"%ld\"", gsm_load);
-        if (_BC26SendCmdReply(buff, "OK", 20000)) {
+        if (_BC26SendCmdReply(buff, "OK", 30000)) {
             Serial.println(F("Network is ok !!"));
         } else {
             Serial.println(F("Network is not ok !!"));
@@ -129,12 +132,19 @@ bool BC26MQTTPublish(const char *topic, char *msg, int qos)
     return true;
 }
 
-bool BC26MQTTSubscribe(const char *topic, int qos)
+bool BC26MQTTSubscribe(const char *topic, int qos, void (*callback)(char *msg))
 {
-    char buff[200];
+    static int sub_sum = 0;
+    char       buff[200];
     sprintf(buff, "AT+QMTSUB=0,1,\"%s\",%d", topic, qos);
     while (!_BC26SendCmdReply(buff, "+QMTSUB: 0,1,0,0", 10000)) {
         BC26ConnectMQTTServer(bc26_host, bc26_user, bc26_key, bc26_port);
+    }
+    sub_arr[sub_sum].topic      = topic;
+    sub_arr[sub_sum++].callback = callback;
+    if (sub_sum > NUM_OF_SUB) {
+        Serial.println(F("Subscription limit exceeded !"));
+        return false;
     }
     Serial.print(F("Subscribe Topic("));
     Serial.print(topic);
@@ -158,27 +168,32 @@ int getBC26CSQ(void)
     return -1;
 }
 
-bool readBC26MQTTMsg(char *msg)
+void ProcSubs(void)
 {
-    char *head, *tail;
+    // +QMTRECV: 0,0,"<topic>","<message>"
+    char *head, *tail, *msg;
     bc26_buff = "";
 
     if (bc26.available()) {
         bc26_buff += bc26.readStringUntil('\n');
         head = strstr(bc26_buff.c_str(), "+QMTRECV: 0,0,");
         if (head) {
-            DEBUG_PRINT("receive:");
-            DEBUG_PRINT(bc26_buff);
-            DEBUG_PRINT(head);
-            head += 14;
-            DEBUG_PRINT(head);
-            tail = strstr(head, "\r");
-            DEBUG_PRINT(tail);
-            strncpy(msg, head, tail - head);
-            msg[tail - head] = '\0';
-            DEBUG_PRINT(msg);
-            return true;
+            for (int ii = 0; ii < NUM_OF_SUB; ii++) {
+                msg = strstr(head, sub_arr[ii].topic);
+                if (msg) {
+                    DEBUG_PRINT("receive:");
+                    DEBUG_PRINT(bc26_buff);
+                    DEBUG_PRINT(msg);
+                    msg += (strlen(sub_arr[ii].topic) + 3);
+                    DEBUG_PRINT(msg);
+                    tail = strstr(msg, "\"");
+                    DEBUG_PRINT(tail);
+                    *tail = '\0';
+                    DEBUG_PRINT(msg);
+                    sub_arr[ii].callback(msg);
+                    return;
+                }
+            }
         }
     }
-    return false;
 }
